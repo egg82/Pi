@@ -1,0 +1,15 @@
+﻿<Properties StartupItem="Pi.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Patterns/Observer/Observer.cs">
+    <Files>
+      <File FileName="Network/TCPClient.cs" Line="42" Column="5" />
+      <File FileName="Network/TCPServer.cs" Line="15" Column="3" />
+      <File FileName="Pi.cs" Line="16" Column="39" />
+      <File FileName="Patterns/Observer/Observer.cs" Line="80" Column="2" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
