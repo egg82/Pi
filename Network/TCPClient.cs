@@ -162,10 +162,6 @@ namespace Network {
 				dispatch(TCPClientEvent.ERROR, ex.Message);
 			}
 
-			if (bytesRead == 0 || bytesRead == buffer.Length - 1) {
-				return;
-			}
-
 			byte[] temp = data.ToArray();
 			data.SetLength(0L);
 

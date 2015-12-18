@@ -222,10 +222,6 @@ namespace Network {
 				dispatch(TCPServerEvent.ERROR, ex.Message);
 			}
 
-			if (bytesRead == 0 || bytesRead == bufferSize - 1) {
-				return;
-			}
-
 			byte[] temp = state.data.ToArray();
 			state.data.SetLength(0L);
 

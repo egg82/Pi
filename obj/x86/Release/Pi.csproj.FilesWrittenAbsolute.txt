@@ -1,0 +1,6 @@
+/home/alex/Pi/obj/x86/Release/.NETFramework,Version=v4.5.AssemblyAttribute.cs
+/home/alex/Pi/bin/Release/Pi.exe.mdb
+/home/alex/Pi/bin/Release/Pi.exe
+/home/alex/Pi/obj/x86/Release/Pi.exe
+/home/alex/Pi/obj/x86/Release/Pi.exe.mdb
+/home/alex/Pi/bin/Release/BouncyCastle.Crypto.dll
