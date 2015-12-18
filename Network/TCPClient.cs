@@ -19,18 +19,23 @@ namespace Network {
 		private MemoryStream data = new MemoryStream();
 
 		//constructor
-		public TCPClient(int bufferSize = 4096) {
+		public TCPClient(int bufferSize = 1024) {
 			if (bufferSize < 1) {
-				bufferSize = 4096;
+				bufferSize = 1024;
 			}
 
 			buffer = new byte[bufferSize];
+			socket.SendBufferSize = socket.ReceiveBufferSize = bufferSize;
 		}
 
 		//public
 		public void connect(string host, ushort port) {
 			if (socket.Connected) {
-				disconnect();
+				socket.Disconnect(true);
+				socket.Close();
+				GC.Collect();
+				backlog.Clear();
+				dispatch(TCPClientEvent.DISCONNECTED);
 			}
 
 			available = false;
@@ -54,9 +59,6 @@ namespace Network {
 				dispatch(TCPClientEvent.ERROR, ex.Message);
 				return;
 			}
-
-			backlog.Clear();
-			dispatch(TCPClientEvent.DISCONNECTED);
 		}
 
 		public void send(byte[] data) {
@@ -84,9 +86,12 @@ namespace Network {
 
 		//private
 		private void sendInternal(byte[] data) {
+			available = false;
+
 			try {
 				socket.BeginSend(data, 0, data.Length, SocketFlags.None, new AsyncCallback(onSend), null);
 			} catch (Exception ex) {
+				available = true;
 				dispatch(TCPClientEvent.ERROR, ex.Message);
 				return;
 			}
@@ -119,6 +124,9 @@ namespace Network {
 				return;
 			}
 
+			socket.Close();
+			GC.Collect();
+
 			backlog.Clear();
 			dispatch(TCPClientEvent.DISCONNECTED);
 		}
@@ -144,14 +152,17 @@ namespace Network {
 				return;
 			}
 
+			if (bytesRead > 0) {
+				data.Write(buffer, 0, bytesRead);
+			}
+
 			try {
 				socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(onRecieve), null);
 			} catch (Exception ex) {
 				dispatch(TCPClientEvent.ERROR, ex.Message);
 			}
 
-			if (bytesRead > 0) {
-				data.Write(buffer, 0, buffer.Length);
+			if (bytesRead == 0 || bytesRead == buffer.Length - 1) {
 				return;
 			}
 

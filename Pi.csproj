@@ -34,6 +34,7 @@
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>packages\BouncyCastle.1.7.0\lib\Net40-Client\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -44,6 +45,10 @@
     <Compile Include="Patterns\Observer\Observer.cs" />
     <Compile Include="Events\Network\TCPClientEvent.cs" />
     <Compile Include="Pi.cs" />
+    <Compile Include="Events\Network\TCPServerEvent.cs" />
+    <Compile Include="Crypto\DiffieHellman.cs" />
+    <Compile Include="Crypto\Rijndael.cs" />
+    <Compile Include="Crypto\Hash.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

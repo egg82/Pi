@@ -4,3 +4,9 @@
 /home/alex/Projects/Pi/obj/x86/Debug/Pi.exe
 /home/alex/Projects/Pi/obj/x86/Debug/Pi.exe.mdb
 /home/alex/Projects/Pi/bin/Debug/BouncyCastle.Crypto.dll
+/home/alex/Pi/obj/x86/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.cs
+/home/alex/Pi/obj/x86/Debug/Pi.exe
+/home/alex/Pi/obj/x86/Debug/Pi.exe.mdb
+/home/alex/Pi/bin/Debug/BouncyCastle.Crypto.dll
+/home/alex/Pi/bin/Debug/Pi.exe.mdb
+/home/alex/Pi/bin/Debug/Pi.exe

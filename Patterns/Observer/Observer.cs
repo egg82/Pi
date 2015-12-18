@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Patterns.Observer {
 	public class Observer {
 		//vars
-		private List<Action<object, string, object>> listeners = new List<Action<object, string, object>>();
+		private List<Action<object, string, dynamic>> listeners = new List<Action<object, string, dynamic>>();
 
 		//constructor
 		public Observer() {
@@ -45,7 +45,7 @@ namespace Patterns.Observer {
 			}
 		}
 
-		public void add(Action<object, string, object> listener) {
+		public void add(Action<object, string, dynamic> listener) {
 			if (listener == null) {
 				return;
 			}
@@ -56,7 +56,7 @@ namespace Patterns.Observer {
 
 			listeners.Add(listener);
 		}
-		public void remove(Action<object, string, object> listener) {
+		public void remove(Action<object, string, dynamic> listener) {
 			if (listener == null) {
 				return;
 			}
