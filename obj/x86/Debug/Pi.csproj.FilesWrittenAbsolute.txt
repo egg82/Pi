@@ -10,3 +10,4 @@
 /home/alex/Pi/bin/Debug/BouncyCastle.Crypto.dll
 /home/alex/Pi/bin/Debug/Pi.exe.mdb
 /home/alex/Pi/bin/Debug/Pi.exe
+/home/alex/Pi/bin/Debug/CommandLine.dll

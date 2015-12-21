@@ -9,21 +9,27 @@ using System.Diagnostics;
 namespace Pi {
 	public class Pi {
 		//vars
-		private DiffieHellman client = new DiffieHellman();
+		/*private DiffieHellman client = new DiffieHellman();
 		private DiffieHellman server = new DiffieHellman();
 		private Rijndael aes;
 		private Hash hash = new Hash();
 
 		private byte[] key;
-		private byte[] iv;
+		private byte[] iv;*/
 
-		private Stopwatch watch;
+		private Server server;
+		private Client client;
+		private Options options;
 
 		//constructor
 		public Pi(string[] args) {
-			//server.open(41123);
+			options = new Options();
+			if (!CommandLine.Parser.Default.ParseArguments(args, options)) {
+				Console.WriteLine("Error: Could not parse arguments.");
+				return;
+			}
 
-			byte[] a = client.ab;
+			/*byte[] a = client.ab;
 			byte[] A = client.AB;
 			byte[] clientS;
 
@@ -31,55 +37,31 @@ namespace Pi {
 			byte[] B = server.AB;
 			byte[] serverS;
 
-			watch = Stopwatch.StartNew();
-			for (int i = 0; i < 10; i++) {
-				client.S(B);
-				server.S(A);
-			}
-			watch.Stop();
-			Console.WriteLine("DH key took " + ((double) watch.ElapsedMilliseconds / 10.0d) + "ms");
-
 			clientS = client.S(B);
 			serverS = server.S(A);
 
-			//Console.WriteLine(Encoding.UTF8.GetString(clientS));
-			//Console.WriteLine(Encoding.UTF8.GetString(serverS));
+			Console.WriteLine(Encoding.UTF8.GetString(clientS));
+			Console.WriteLine(Encoding.UTF8.GetString(serverS));
 
-			watch = Stopwatch.StartNew();
-			for (int i = 0; i < 100000; i++) {
-				key = hash.generate256Key("0keeP+attentioN+wateR+herE1+", clientS);
-				iv = hash.generate256Key("1-Knew-Carbon-Involved-State2", clientS);
-			}
-			watch.Stop();
-			Console.WriteLine("AES key took " + ((double) watch.ElapsedMilliseconds / 100000.0d) + "ms");
+			key = hash.generate256Key("0keeP+attentioN+wateR+herE1+", clientS);
+			iv = hash.generate256Key("1-Knew-Carbon-Involved-State2", clientS);
 
 			aes = new Rijndael(key, iv);
-			/*Console.WriteLine(Encoding.ASCII.GetString(hash.hex(key)));
+			Console.WriteLine(Encoding.ASCII.GetString(hash.hex(key)));
 			Console.WriteLine(Encoding.ASCII.GetString(hash.hex(iv)));
 			Console.WriteLine(Encoding.UTF8.GetString(aes.encrypt(Encoding.ASCII.GetBytes("Hello!"))));
 			Console.WriteLine(Encoding.ASCII.GetString(aes.decrypt(aes.encrypt(Encoding.ASCII.GetBytes("Hello!")))));*/
 
-			byte[] enc = Encoding.ASCII.GetBytes("Hello!");
-
-			watch = Stopwatch.StartNew();
-			for (int i = 0; i < 1000000; i++) {
-				aes.encrypt(enc);
+			if (options.isClient) {
+				server = new Server(options.port);
+				client = new Client(options.host, options.port);
+			} else {
+				server = new Server(options.port);
 			}
-			watch.Stop();
-			Console.WriteLine("AES encrypt took " + ((double) watch.ElapsedMilliseconds / 1000000.0d) + "ms");
 
-			enc = aes.encrypt(enc);
-
-			watch = Stopwatch.StartNew();
-			for (int i = 0; i < 1000000; i++) {
-				aes.decrypt(enc);
-			}
-			watch.Stop();
-			Console.WriteLine("AES decrypt took " + ((double) watch.ElapsedMilliseconds / 1000000.0d) + "ms");
-
-			/*while (true) {
+			while (true) {
 				Console.ReadLine();
-			}*/
+			}
 		}
 
 		//public

@@ -16,6 +16,7 @@ namespace Network {
 		private List<Socket> clients = new List<Socket>();
 
 		private Timer openTimer = new Timer(100.0d);
+		private ushort _port;
 
 		private int bufferSize;
 		private struct State {
@@ -25,7 +26,7 @@ namespace Network {
 		}
 
 		//constructor
-		public TCPServer(int bufferSize = 1024) {
+		public TCPServer(int bufferSize = 1024, bool exclusive = true) {
 			openTimer.Elapsed += new ElapsedEventHandler(onOpenTimer);
 
 			if (bufferSize < 1) {
@@ -33,7 +34,7 @@ namespace Network {
 			}
 
 			this.bufferSize = bufferSize;
-			server.ExclusiveAddressUse = true;
+			server.ExclusiveAddressUse = exclusive;
 		}
 
 		//public
@@ -50,6 +51,7 @@ namespace Network {
 				return;
 			}
 
+			_port = port;
 			openTimer.Start();
 		}
 		public void close() {
@@ -136,6 +138,12 @@ namespace Network {
 
 			clients.Clear();
 			GC.Collect();
+		}
+
+		public ushort port {
+			get {
+				return _port;
+			}
 		}
 
 		//private
