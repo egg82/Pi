@@ -8,6 +8,7 @@
     <RootNamespace>Pi</RootNamespace>
     <AssemblyName>Pi</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <StartupObject>Pi.MainClass</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
@@ -19,6 +20,7 @@
     <WarningLevel>4</WarningLevel>
     <Externalconsole>true</Externalconsole>
     <PlatformTarget>x86</PlatformTarget>
+    <Commandlineparameters>-c true</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>full</DebugType>
@@ -35,6 +37,9 @@
       <HintPath>packages\BouncyCastle.1.7.0\lib\Net40-Client\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="CommandLine">
+      <HintPath>packages\CommandLineParser.1.9.71\lib\net45\CommandLine.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -49,6 +54,11 @@
     <Compile Include="Crypto\DiffieHellman.cs" />
     <Compile Include="Crypto\Rijndael.cs" />
     <Compile Include="Crypto\Hash.cs" />
+    <Compile Include="Server.cs" />
+    <Compile Include="Network\PacketHelper.cs" />
+    <Compile Include="Client.cs" />
+    <Compile Include="Options.cs" />
+    <Compile Include="Enums\PacketType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -61,5 +71,6 @@
     <Folder Include="Patterns\Observer\" />
     <Folder Include="Events\" />
     <Folder Include="Events\Network\" />
+    <Folder Include="Enums\" />
   </ItemGroup>
 </Project>

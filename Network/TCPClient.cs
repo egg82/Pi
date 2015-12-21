@@ -18,6 +18,9 @@ namespace Network {
 		private byte[] buffer;
 		private MemoryStream data = new MemoryStream();
 
+		private string _host;
+		private ushort _port;
+
 		//constructor
 		public TCPClient(int bufferSize = 1024) {
 			if (bufferSize < 1) {
@@ -39,6 +42,9 @@ namespace Network {
 			}
 
 			available = false;
+			_host = host;
+			_port = port;
+
 			try {
 				socket.BeginConnect(host, (int) port, new AsyncCallback(onConnect), null);
 			} catch (Exception ex) {
@@ -77,6 +83,16 @@ namespace Network {
 		public bool connected {
 			get {
 				return socket.Connected;
+			}
+		}
+		public string host {
+			get {
+				return _host;
+			}
+		}
+		public ushort port {
+			get {
+				return _port;
 			}
 		}
 
