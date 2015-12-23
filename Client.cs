@@ -5,6 +5,7 @@ using Patterns.Observer;
 using Events.Network;
 using Enums;
 using Util;
+using Speech;
 
 namespace Pi {
 	public class Client {
@@ -12,6 +13,8 @@ namespace Pi {
 		private TCPClient socket = new TCPClient();
 		private DiffieHellman dh = new DiffieHellman();
 		private Rijndael aes;
+
+		private SpeechEngine engine = new SpeechEngine();
 
 		private Observer socketObserver = new Observer();
 
@@ -76,6 +79,8 @@ namespace Pi {
 				sendPacket(PacketType.TEST, aes.encrypt(ByteUtil.toByte("Hello! I'm the client's test string.")));
 			} else if (packetType == PacketType.TEST) {
 				Console.WriteLine("[Client] " + ByteUtil.toString(aes.decrypt(packetData)));
+				Console.WriteLine("[Client] Listening for speech..");
+				engine.start();
 			}
 		}
 	}
