@@ -24,18 +24,6 @@ namespace Crypto {
 			return retArr;
 		}
 
-		public static byte[] generate256Key(string password, byte[] salt) {
-			byte[] temp = Encoding.UTF8.GetBytes(password);
-			byte[] temp2 = new byte[temp.Length + salt.Length];
-			Buffer.BlockCopy(temp, 0, temp2, 0, temp.Length);
-			Buffer.BlockCopy(salt, 0, temp2, temp.Length, salt.Length);
-			return sha256(temp2);
-		}
-
-		public static byte[] hex(byte[] input) {
-			return Hex.Encode(input);
-		}
-
 		//private
 
 	}

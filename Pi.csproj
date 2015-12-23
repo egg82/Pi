@@ -42,6 +42,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Util\ByteUtil.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Network\TCPClient.cs" />
@@ -55,7 +56,7 @@
     <Compile Include="Crypto\Rijndael.cs" />
     <Compile Include="Crypto\Hash.cs" />
     <Compile Include="Server.cs" />
-    <Compile Include="Network\PacketHelper.cs" />
+    <Compile Include="Util\PacketUtil.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Enums\PacketType.cs" />

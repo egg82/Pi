@@ -54,8 +54,8 @@ namespace Pi {
 
 			if (options.isClient) {
 				server = new Server(options.port);
-				//client = new Client(options.host, options.port);
-				client = new Client("www.google.com", 80);
+				client = new Client(options.host, options.port);
+				//client = new Client("www.google.com", 80);
 			} else {
 				server = new Server(options.port);
 			}

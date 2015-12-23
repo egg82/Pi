@@ -294,10 +294,8 @@ namespace Network {
 		}
 
 		private void receiveNext(State state) {
-			byte[] buffer = new byte[_bufferSize];
-
 			try {
-				state.stream.BeginRead(buffer, 0, _bufferSize, new AsyncCallback(onClientReceive), state);
+				state.stream.BeginRead(state.buffer, 0, _bufferSize, new AsyncCallback(onClientReceive), state);
 			} catch (Exception ex) {
 				dispatch(TCPClientEvent.ERROR, ex.Message);
 				return;
