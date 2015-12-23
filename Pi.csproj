@@ -32,6 +32,10 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Syn.Speech, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Syn.Speech.1.0.3\lib\net45\Syn.Speech.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>packages\BouncyCastle.1.7.0\lib\Net40-Client\BouncyCastle.Crypto.dll</HintPath>
@@ -42,6 +46,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Events\Patterns\Command\CommandEvent.cs" />
+    <Compile Include="Patterns\Command\Command.cs" />
+    <Compile Include="Patterns\Command\NestedCommand.cs" />
+    <Compile Include="Patterns\Command\ParallelCommand.cs" />
+    <Compile Include="Patterns\Command\SerialCommand.cs" />
     <Compile Include="Util\ByteUtil.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

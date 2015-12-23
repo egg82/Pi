@@ -7,3 +7,4 @@ C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\obj\x86\Debug\Pi.csprojRe
 C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\obj\x86\Debug\Pi.pdb
 C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\CommandLine.dll
 C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\CommandLine.xml
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\Syn.Speech.dll
