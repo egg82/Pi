@@ -66,15 +66,19 @@ namespace Network {
 			}
 
 			for (int i = 0; i < clients.Count; i++) {
-				try {
-					clients[i].client.Close();
-					clients[i].stream.Close();
-					clients[i].stream.Dispose();
-				} catch (Exception ex) {
-					dispatch(TCPServerEvent.ERROR, ex.Message);
+				if (clients[i].client != null && clients[i].client.Connected) {
+					try {
+						clients[i].client.Close();
+						clients[i].stream.Close();
+						clients[i].stream.Dispose();
+					} catch (Exception ex) {
+						dispatch(TCPServerEvent.ERROR, ex.Message);
+					}
+
+					clients[i].outStream.SetLength(0L);
+
+					dispatch(TCPClientEvent.DISCONNECTED, clients[i].pos);
 				}
-				
-				clients[i].outStream.SetLength(0L);
 			}
 
 			clients.Clear();
@@ -101,7 +105,7 @@ namespace Network {
 			if (client < 0 || client >= clients.Count) {
 				return;
 			}
-			if (!clients[client].client.Connected) {
+			if (clients[client].client == null || !clients[client].client.Connected) {
 				return;
 			}
 
@@ -136,10 +140,35 @@ namespace Network {
 		}
 
 		public void disconnect(int client) {
+			if (client < 0 || client >= clients.Count) {
+				return;
+			}
+			if (clients[client].client == null || !clients[client].client.Connected) {
+				return;
+			}
 
+			disconnectClientInternal(clients[client]);
 		}
 		public void disconnectAll() {
+			for (int i = 0; i < clients.Count; i++) {
+				if (clients[i].client != null && clients[i].client.Connected) {
+					try {
+						clients[i].client.Close();
+						clients[i].stream.Close();
+						clients[i].stream.Dispose();
+					} catch (Exception ex) {
+						dispatch(TCPServerEvent.ERROR, ex.Message);
+					}
+					
+					clients[i].outStream.SetLength(0L);
 
+					dispatch(TCPClientEvent.DISCONNECTED, clients[i].pos);
+				}
+			}
+
+			clients.Clear();
+
+			GC.Collect();
 		}
 
 		public ushort port {
@@ -168,7 +197,6 @@ namespace Network {
 				state.stream.Dispose();
 			} catch (Exception ex) {
 				dispatch(TCPClientEvent.ERROR, ex.Message);
-				return;
 			}
 
 			state.client = null;
