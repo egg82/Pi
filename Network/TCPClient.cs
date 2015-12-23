@@ -172,6 +172,10 @@ namespace Network {
 			dispatch(TCPClientEvent.DEBUG, "Received " + ((bytesRead > 0 && buffer[bytesRead - 1] == (byte) 0) ? bytesRead - 1 : bytesRead) + " bytes.");
 
 			if (bytesRead == 0 || buffer[bytesRead - 1] == (byte) 0) {
+				if (bytesRead > 0) {
+					receiveNext();
+				}
+
 				lock (outStream) {
 					if (bytesRead > 0 && buffer[bytesRead - 1] == (byte) 0) {
 						outStream.Write(buffer, 0, bytesRead - 1);

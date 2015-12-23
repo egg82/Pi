@@ -58,9 +58,7 @@ namespace Pi {
 		}
 
 		private void sendPacket(ushort type, byte[] data) {
-			byte[] packet = PacketUtil.createPacket(data, type);
-
-			socket.send(packet);
+			socket.send(PacketUtil.createPacket(data, type));
 		}
 
 		private void handlePacket(byte[] packet) {
@@ -74,6 +72,10 @@ namespace Pi {
 				iv = Hash.sha256(ByteUtil.combine(ByteUtil.toByte("1-Knew-Carbon-Involved-State2"), S));
 				aes = new Rijndael(key, iv);
 				Console.WriteLine("[Client] DH key exchanged, AES key created.");
+				Console.WriteLine("[Client] Sending encrypted test string.");
+				sendPacket(PacketType.TEST, aes.encrypt(ByteUtil.toByte("Hello! I'm the client's test string.")));
+			} else if (packetType == PacketType.TEST) {
+				Console.WriteLine("[Client] " + ByteUtil.toString(aes.decrypt(packetData)));
 			}
 		}
 	}

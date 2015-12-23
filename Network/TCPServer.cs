@@ -266,6 +266,10 @@ namespace Network {
 			dispatch(TCPServerEvent.DEBUG, "Received " + ((bytesRead > 0 && state.buffer[bytesRead - 1] == (byte) 0) ? bytesRead - 1 : bytesRead) + " bytes.");
 
 			if (bytesRead == 0 || state.buffer[bytesRead - 1] == (byte) 0) {
+				if (bytesRead > 0) {
+					receiveNext(state);
+				}
+
 				lock (state.outStream) {
 					if (bytesRead > 0 && state.buffer[bytesRead - 1] == (byte) 0) {
 						state.outStream.Write(state.buffer, 0, bytesRead - 1);

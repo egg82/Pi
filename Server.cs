@@ -67,6 +67,10 @@ namespace Pi {
 				Console.WriteLine("[Server] DH key exchanged, AES key created.");
 				sendPacket(client, PacketType.DIFFIE_HELLMAN, dh.AB);
 				Console.WriteLine("[Server] Sent DH handshake.");
+			} else if (packetType == PacketType.TEST) {
+				Console.WriteLine("[Server] " + ByteUtil.toString(aes.decrypt(packetData)));
+				Console.WriteLine("[Server] Sending encrypted test string.");
+				sendPacket(client, PacketType.TEST, aes.encrypt(ByteUtil.toByte("Hello, client! I'm the server's test string.")));
 			}
 		}
 	}
