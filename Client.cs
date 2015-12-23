@@ -10,9 +10,8 @@ using System.Text;
 namespace Pi {
 	public class Client {
 		//vars
-		private TCPClient socket = new TCPClient(128);
+		private TCPClient socket = new TCPClient();
 		private DiffieHellman dh = new DiffieHellman();
-		private Hash hash = new Hash();
 		private Rijndael aes;
 
 		private Observer socketObserver = new Observer();
@@ -23,11 +22,16 @@ namespace Pi {
 		private byte[] key;
 		private byte[] iv;
 
+		private string _host;
+		private ushort _port;
+
 		//constructor
 		public Client(string host, ushort port) {
 			socketObserver.add(onSocketObserverNotify);
 			Observer.add(TCPClient.OBSERVERS, socketObserver);
 
+			_host = host;
+			_port = port;
 			socket.connect(host, port);
 		}
 
@@ -41,12 +45,19 @@ namespace Pi {
 
 			if (evnt == TCPClientEvent.CONNECTED) {
 				Console.WriteLine("[Client] Connected to " + socket.host + " on port " + socket.port + ".");
-				sendPacket(PacketType.DIFFIE_HELLMAN, dh.AB);
-				Console.WriteLine("[Client] Sent DH handshake.");
+				//sendPacket(PacketType.DIFFIE_HELLMAN, dh.AB);
+				//Console.WriteLine("[Client] Sent DH handshake.");
+				socket.send(Encoding.UTF8.GetBytes("GET / HTTP/1.0\r\n\r\n"));
+			} else if (evnt == TCPClientEvent.DISCONNECTED) {
+				Console.WriteLine("[Client] Disconnected.");
+				//socket.connect(_host, _port);
 			} else if (evnt == TCPClientEvent.DOWNLOAD_COMPLETE) {
-				readPackets(args);
+				Console.WriteLine("[Client] Received " + args.Length + " bytes.");
+				//readPackets(args);
 			} else if (evnt == TCPClientEvent.ERROR) {
 				Console.WriteLine("[Client] Error: " + args);
+			} else if (evnt == TCPClientEvent.DEBUG) {
+				//Console.WriteLine("[Client] Debug: " + args);
 			}
 		}
 
@@ -97,8 +108,8 @@ namespace Pi {
 			if (packetType == PacketType.DIFFIE_HELLMAN) {
 				Console.WriteLine("[Client] Recieved DH key.");
 				byte[] S = dh.S(packetData);
-				key = hash.generate256Key("0keeP+attentioN+wateR+herE1+", S);
-				iv = hash.generate256Key("1-Knew-Carbon-Involved-State2", S);
+				key = Hash.generate256Key("0keeP+attentioN+wateR+herE1+", S);
+				iv = Hash.generate256Key("1-Knew-Carbon-Involved-State2", S);
 				aes = new Rijndael(key, iv);
 				Console.WriteLine("[Client] DH key exchanged, AES key created.");
 			}

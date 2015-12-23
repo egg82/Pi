@@ -1,0 +1,9 @@
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\obj\x86\Debug\Pi.exe
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\Pi.exe
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\Pi.pdb
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\BouncyCastle.Crypto.dll
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\BouncyCastle.Crypto.pdb
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\obj\x86\Debug\Pi.csprojResolveAssemblyReference.cache
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\obj\x86\Debug\Pi.pdb
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\CommandLine.dll
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\CommandLine.xml

@@ -2,27 +2,31 @@
 using System.Collections.Generic;
 using Patterns.Observer;
 using System.Net.Sockets;
+using System.IO;
+using System.Timers;
 using Events.Network;
 using System.Net;
-using System.Timers;
-using System.IO;
 
 namespace Network {
 	public class TCPServer : IDispatchable {
 		//vars
 		public static readonly List<Observer> OBSERVERS = new List<Observer>();
 
-		private Socket server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-		private List<Socket> clients = new List<Socket>();
+		private TcpListener server;
+		private List<State> clients = new List<State>();
+		private int _bufferSize;
+		private bool _exclusive;
 
 		private Timer openTimer = new Timer(100.0d);
-		private ushort _port;
 
-		private int bufferSize;
+		private ushort _port = 0;
+
 		private struct State {
 			public byte[] buffer;
-			public MemoryStream data;
-			public Socket socket;
+			public NetworkStream stream;
+			public MemoryStream outStream;
+			public int pos;
+			public TcpClient client;
 		}
 
 		//constructor
@@ -33,19 +37,21 @@ namespace Network {
 				bufferSize = 1024;
 			}
 
-			this.bufferSize = bufferSize;
-			server.ExclusiveAddressUse = exclusive;
+			_bufferSize = bufferSize;
+			_exclusive = exclusive;
 		}
 
 		//public
 		public void open(ushort port) {
-			if (server.IsBound) {
-				close();
+			if (server != null && server.Server.IsBound) {
+				dispatch(TCPServerEvent.ERROR, "TCPServer is already bound to " + _port + ".");
+				return;
 			}
 
+			server = new TcpListener(IPAddress.Any, (int) port);
+			server.ExclusiveAddressUse = _exclusive;
 			try {
-				server.Bind(new IPEndPoint(IPAddress.Any, port));
-				server.Listen(1024);
+				server.Start();
 			} catch (Exception ex) {
 				dispatch(TCPServerEvent.ERROR, ex.Message);
 				return;
@@ -55,89 +61,85 @@ namespace Network {
 			openTimer.Start();
 		}
 		public void close() {
-			if (!server.IsBound) {
+			if (server == null || !server.Server.IsBound) {
 				return;
 			}
 
 			for (int i = 0; i < clients.Count; i++) {
 				try {
-					clients[i].BeginDisconnect(false, new AsyncCallback(onClientClose), clients[i]);
+					clients[i].client.Close();
+					clients[i].stream.Close();
+					clients[i].stream.Dispose();
 				} catch (Exception ex) {
 					dispatch(TCPServerEvent.ERROR, ex.Message);
 				}
+				
+				clients[i].outStream.SetLength(0L);
 			}
 
 			clients.Clear();
 
 			try {
-				server.Close();
+				server.Stop();
 			} catch (Exception ex) {
 				dispatch(TCPServerEvent.ERROR, ex.Message);
+				return;
 			}
+
+			server = null;
+			_port = 0;
+			openTimer.Stop();
 			GC.Collect();
 
-			openTimer.Stop();
 			dispatch(TCPServerEvent.CLOSED);
 		}
 
-		public void dispatch(string evnt, object data = null) {
-			Observer.dispatch(OBSERVERS, this, evnt, data);
-		}
-
 		public void send(int client, byte[] data) {
-			if (data == null | data.Length == 0) {
+			if (data == null || data.Length == 0) {
 				return;
 			}
 			if (client < 0 || client >= clients.Count) {
 				return;
 			}
+			if (!clients[client].client.Connected) {
+				return;
+			}
+
+			byte[] newData = new byte[data.Length + 1];
+			Buffer.BlockCopy(data, 0, newData, 0, data.Length);
 
 			try {
-				clients[client].BeginSend(data, 0, data.Length, SocketFlags.None, new AsyncCallback(onClientSend), clients[client]);
+				clients[client].stream.BeginWrite(newData, 0, newData.Length, new AsyncCallback(onClientSend), clients[client]);
 			} catch (Exception ex) {
-				dispatch(TCPClientEvent.ERROR, ex.Message);
+				dispatch(TCPServerEvent.ERROR, ex.Message);
 				return;
 			}
 
-			dispatch(TCPClientEvent.DEBUG, "Sent " + data.Length + " bytes to client " + client);
+			dispatch(TCPServerEvent.DEBUG, "Sending " + data.Length + " bytes to client #" + client + ".");
 		}
 		public void sendAll(byte[] data) {
-			if (data == null | data.Length == 0) {
+			if (data == null || data.Length == 0) {
 				return;
 			}
+
+			byte[] newData = new byte[data.Length + 1];
+			Buffer.BlockCopy(data, 0, newData, 0, data.Length);
 
 			for (int i = 0; i < clients.Count; i++) {
 				try {
-					clients[i].BeginSend(data, 0, data.Length, SocketFlags.None, new AsyncCallback(onClientSend), clients[i]);
-					dispatch(TCPClientEvent.DEBUG, "Sent " + data.Length + " bytes to client " + i);
+					clients[i].stream.BeginWrite(newData, 0, newData.Length, new AsyncCallback(onClientSend), clients[i]);
+					dispatch(TCPServerEvent.DEBUG, "Sent " + data.Length + " bytes to client #" + i + ".");
 				} catch (Exception ex) {
-					dispatch(TCPClientEvent.ERROR, ex.Message);
+					dispatch(TCPServerEvent.ERROR, ex.Message);
 				}
 			}
 		}
 
 		public void disconnect(int client) {
-			if (client < 0 || client >= clients.Count) {
-				return;
-			}
 
-			try {
-				clients[client].BeginDisconnect(false, new AsyncCallback(onClientClose), clients[client]);
-			} catch (Exception ex) {
-				dispatch(TCPServerEvent.ERROR, ex.Message);
-			}
 		}
 		public void disconnectAll() {
-			for (int i = 0; i < clients.Count; i++) {
-				try {
-					clients[i].BeginDisconnect(false, new AsyncCallback(onClientClose), clients[i]);
-				} catch (Exception ex) {
-					dispatch(TCPServerEvent.ERROR, ex.Message);
-				}
-			}
 
-			clients.Clear();
-			GC.Collect();
 		}
 
 		public ushort port {
@@ -146,105 +148,131 @@ namespace Network {
 			}
 		}
 
+		public void dispatch(string evnt, object data = null) {
+			Observer.dispatch(OBSERVERS, this, evnt, data);
+		}
+
 		//private
+		private void onOpenTimer(object sender, ElapsedEventArgs e) {
+			if (server.Server.IsBound) {
+				openTimer.Stop();
+				server.BeginAcceptTcpClient(new AsyncCallback(onConnect), null);
+				dispatch(TCPServerEvent.OPENED);
+			}
+		}
+
+		private void disconnectClientInternal(State state) {
+			try {
+				state.client.Close();
+				state.stream.Close();
+				state.stream.Dispose();
+			} catch (Exception ex) {
+				dispatch(TCPClientEvent.ERROR, ex.Message);
+				return;
+			}
+
+			state.client = null;
+			state.outStream.SetLength(0L);
+
+			GC.Collect();
+
+			dispatch(TCPClientEvent.DISCONNECTED, state.pos);
+		}
 		private void onConnect(IAsyncResult e) {
-			Socket clientSocket;
+			TcpClient client;
 
 			try {
-				clientSocket = server.EndAccept(e);
+				client = server.EndAcceptTcpClient(e);
 			} catch (Exception ex) {
 				dispatch(TCPServerEvent.ERROR, ex.Message);
 				return;
 			}
 
-			server.BeginAccept(new AsyncCallback(onConnect), null);
+			server.BeginAcceptTcpClient(new AsyncCallback(onConnect), null);
 
-			if (clients.Contains(clientSocket)) {
-				return;
+			for (int i = 0; i < clients.Count; i++) {
+				if (clients[i].client == client) {
+					return;
+				}
 			}
 
 			State state = new State();
-			state.buffer = new byte[bufferSize];
-			state.data = new MemoryStream();
-			state.socket = clientSocket;
+			state.buffer = new byte[_bufferSize];
+			state.stream = client.GetStream();
+			state.outStream = new MemoryStream();
+			state.client = client;
+			state.pos = clients.Count;
 
-			clientSocket.SendBufferSize = clientSocket.ReceiveBufferSize = bufferSize;
+			//client.SendBufferSize = client.ReceiveBufferSize = _bufferSize;
 
-			try {
-				clientSocket.BeginReceive(state.buffer, 0, state.buffer.Length, SocketFlags.None, new AsyncCallback(onClientRecieve), state);
-			} catch (Exception ex) {
-				dispatch(TCPServerEvent.ERROR, ex.Message);
-			}
+			clients.Add(state);
+			receiveNext(state);
 
-			clients.Add(clientSocket);
-			dispatch(TCPServerEvent.CONNECTION, clients.Count - 1);
+			dispatch(TCPServerEvent.CONNECTION, state.pos);
 		}
 
-		private void onClientClose(IAsyncResult e) {
-			Socket clientSocket = e.AsyncState as Socket;
-
-			try {
-				clientSocket.EndDisconnect(e);
-			} catch (Exception ex) {
-				dispatch(TCPServerEvent.ERROR, ex.Message);
-			}
-
-			int index = clients.IndexOf(clientSocket);
-
-			clientSocket.Close();
-			dispatch(TCPServerEvent.CLIENT_DISCONNECTED, index);
-			if (index > -1) {
-				clients.RemoveAt(index);
-			}
-		}
 		private void onClientSend(IAsyncResult e) {
-			Socket socket = (Socket) e.AsyncState;
+			State state = (State) e.AsyncState;
 
 			try {
-				socket.EndSend(e);
+				state.stream.EndWrite(e);
+				state.stream.Flush();
 			} catch (Exception ex) {
 				dispatch(TCPServerEvent.ERROR, ex.Message);
 				return;
 			}
-
+			
 			dispatch(TCPServerEvent.CLIENT_UPLOAD_COMPLETE);
 		}
-		private void onClientRecieve(IAsyncResult e) {
+		private void onClientReceive(IAsyncResult e) {
 			int bytesRead;
 			State state = (State) e.AsyncState;
 
 			try {
-				bytesRead = state.socket.EndReceive(e);
+				bytesRead = state.stream.EndRead(e);
 			} catch (Exception ex) {
 				dispatch(TCPServerEvent.ERROR, ex.Message);
 				return;
 			}
+			
+			dispatch(TCPServerEvent.DEBUG, "Received " + ((bytesRead > 0 && state.buffer[bytesRead - 1] == (byte) 0) ? bytesRead - 1 : bytesRead) + " bytes.");
 
-			if (bytesRead > 0) {
-				state.data.Write(state.buffer, 0, bytesRead);
+			if (bytesRead == 0 || state.buffer[bytesRead - 1] == (byte) 0) {
+				lock (state.outStream) {
+					if (bytesRead > 0 && state.buffer[bytesRead - 1] == (byte) 0) {
+						state.outStream.Write(state.buffer, 0, bytesRead - 1);
+					}
+
+					if (state.outStream.Length > 0) {
+						byte[] outBuffer = state.outStream.ToArray();
+						state.outStream.SetLength(0L);
+						dispatch(TCPServerEvent.CLIENT_DOWNLOAD_COMPLETE, new {
+							client = state.pos,
+							data = outBuffer
+						});
+					}
+
+					if (bytesRead == 0) {
+						disconnectClientInternal(state);
+					}
+				}
+				return;
+			} else {
+				receiveNext(state);
+				lock (state.outStream) {
+					state.outStream.Write(state.buffer, 0, bytesRead);
+				}
 			}
-
-			try {
-				state.socket.BeginReceive(state.buffer, 0, state.buffer.Length, SocketFlags.None, new AsyncCallback(onClientRecieve), state);
-			} catch (Exception ex) {
-				dispatch(TCPServerEvent.ERROR, ex.Message);
-			}
-
-			byte[] temp = state.data.ToArray();
-			state.data.SetLength(0L);
-
-			dispatch(TCPServerEvent.DEBUG, "Recieved " + temp.Length + " bytes");
-			dispatch(TCPServerEvent.CLIENT_DOWNLOAD_COMPLETE, new {
-				client = clients.IndexOf(state.socket),
-				data = temp
-			});
 		}
 
-		private void onOpenTimer(object sender, ElapsedEventArgs e) {
-			if (server.IsBound) {
-				openTimer.Stop();
-				server.BeginAccept(new AsyncCallback(onConnect), null);
-				dispatch(TCPServerEvent.OPENED);
+		private void receiveNext(State state) {
+			byte[] buffer = new byte[_bufferSize];
+
+			try {
+				state.stream.BeginRead(buffer, 0, _bufferSize, new AsyncCallback(onClientReceive), state);
+			} catch (Exception ex) {
+				dispatch(TCPClientEvent.ERROR, ex.Message);
+				return;
 			}
 		}
 	}

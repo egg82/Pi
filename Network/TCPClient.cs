@@ -1,25 +1,24 @@
 ﻿using System;
-using System.Net.Sockets;
 using System.Collections.Generic;
 using Patterns.Observer;
+using System.Net.Sockets;
 using Events.Network;
 using System.IO;
-using System.Net;
 
 namespace Network {
 	public class TCPClient : IDispatchable {
 		//vars
 		public static readonly List<Observer> OBSERVERS = new List<Observer>();
 
-		private Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+		private TcpClient socket;
+		private NetworkStream stream;
+		private MemoryStream outStream;
 		private List<byte[]> backlog = new List<byte[]>();
-		private bool available;
+		private bool available = true;
+		private int _bufferSize;
 
-		private byte[] buffer;
-		private MemoryStream data = new MemoryStream();
-
-		private string _host;
-		private ushort _port;
+		private string _host = null;
+		private ushort _port = 0;
 
 		//constructor
 		public TCPClient(int bufferSize = 1024) {
@@ -27,48 +26,44 @@ namespace Network {
 				bufferSize = 1024;
 			}
 
-			buffer = new byte[bufferSize];
-			socket.SendBufferSize = socket.ReceiveBufferSize = bufferSize;
+			_bufferSize = bufferSize;
+			//socket.SendBufferSize = socket.ReceiveBufferSize = bufferSize;
+			outStream = new MemoryStream();
 		}
 
 		//public
 		public void connect(string host, ushort port) {
-			if (socket.Connected) {
-				socket.Disconnect(true);
-				socket.Close();
-				GC.Collect();
-				backlog.Clear();
-				dispatch(TCPClientEvent.DISCONNECTED);
+			if (socket != null && socket.Connected) {
+				dispatch(TCPClientEvent.ERROR, "TCPClient is already connected to " + _host + ":" + _port + ".");
+				return;
 			}
 
 			available = false;
-			_host = host;
-			_port = port;
 
+			socket = new TcpClient();
 			try {
 				socket.BeginConnect(host, (int) port, new AsyncCallback(onConnect), null);
 			} catch (Exception ex) {
+				available = true;
 				dispatch(TCPClientEvent.ERROR, ex.Message);
 				return;
 			}
 
+			_host = host;
+			_port = port;
 			backlog.Clear();
+			outStream.SetLength(0L);
 		}
 		public void disconnect() {
-			if (!socket.Connected) {
+			if (socket == null || !socket.Connected) {
 				return;
 			}
 
-			try {
-				socket.BeginDisconnect(true, new AsyncCallback(onClose), null);
-			} catch (Exception ex) {
-				dispatch(TCPClientEvent.ERROR, ex.Message);
-				return;
-			}
+			disconnectInternal();
 		}
 
 		public void send(byte[] data) {
-			if (!socket.Connected || data == null || data.Length == 0) {
+			if (socket == null || !socket.Connected || data == null || data.Length == 0) {
 				return;
 			}
 
@@ -101,18 +96,39 @@ namespace Network {
 		}
 
 		//private
-		private void sendInternal(byte[] data) {
-			available = false;
-
+		private void disconnectInternal() {
 			try {
-				socket.BeginSend(data, 0, data.Length, SocketFlags.None, new AsyncCallback(onSend), null);
+				socket.Close();
+				stream.Close();
+				stream.Dispose();
 			} catch (Exception ex) {
-				available = true;
 				dispatch(TCPClientEvent.ERROR, ex.Message);
 				return;
 			}
 
-			dispatch(TCPClientEvent.DEBUG, "Sent " + data.Length + " bytes");
+			socket = null;
+			_host = null;
+			_port = 0;
+			backlog.Clear();
+			outStream.SetLength(0L);
+
+			GC.Collect();
+
+			dispatch(TCPClientEvent.DISCONNECTED);
+		}
+		private void sendInternal(byte[] data) {
+			dispatch(TCPClientEvent.DEBUG, "Sending " + data.Length + " bytes.");
+
+			byte[] newData = new byte[data.Length + 1];
+			Buffer.BlockCopy(data, 0, newData, 0, data.Length);
+
+			try {
+				stream.BeginWrite(newData, 0, newData.Length, new AsyncCallback(onSend), data.Length);
+			} catch (Exception ex) {
+				dispatch(TCPClientEvent.ERROR, ex.Message);
+				sendNext();
+				return;
+			}
 		}
 
 		private void onConnect(IAsyncResult e) {
@@ -123,68 +139,73 @@ namespace Network {
 				return;
 			}
 
-			try {
-				socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(onRecieve), null);
-			} catch (Exception ex) {
-				dispatch(TCPClientEvent.ERROR, ex.Message);
-			}
+			stream = socket.GetStream();
+			receiveNext();
 
 			dispatch(TCPClientEvent.CONNECTED);
 			sendNext();
 		}
-		private void onClose(IAsyncResult e) {
-			try {
-				socket.EndDisconnect(e);
-			} catch (Exception ex) {
-				dispatch(TCPClientEvent.ERROR, ex.Message);
-				return;
-			}
-
-			socket.Close();
-			GC.Collect();
-
-			backlog.Clear();
-			dispatch(TCPClientEvent.DISCONNECTED);
-		}
-
 		private void onSend(IAsyncResult e) {
 			try {
-				socket.EndSend(e);
+				stream.EndWrite(e);
+				stream.Flush();
 			} catch (Exception ex) {
 				dispatch(TCPClientEvent.ERROR, ex.Message);
 				return;
 			}
 
+			dispatch(TCPClientEvent.DEBUG, "Sent " + ((int) e.AsyncState) + " bytes.");
 			dispatch(TCPClientEvent.UPLOAD_COMPLETE);
 			sendNext();
 		}
-		private void onRecieve(IAsyncResult e) {
+		private void onReceive(IAsyncResult e) {
 			int bytesRead;
+			byte[] buffer = (byte[]) e.AsyncState;
 
 			try {
-				bytesRead = socket.EndReceive(e);
+				bytesRead = stream.EndRead(e);
 			} catch (Exception ex) {
 				dispatch(TCPClientEvent.ERROR, ex.Message);
 				return;
 			}
 
-			if (bytesRead > 0) {
-				data.Write(buffer, 0, bytesRead);
+			dispatch(TCPClientEvent.DEBUG, "Received " + ((bytesRead > 0 && buffer[bytesRead - 1] == (byte) 0) ? bytesRead - 1 : bytesRead) + " bytes.");
+
+			if (bytesRead == 0 || buffer[bytesRead - 1] == (byte) 0) {
+				lock (outStream) {
+					if (bytesRead > 0 && buffer[bytesRead - 1] == (byte) 0) {
+						outStream.Write(buffer, 0, bytesRead - 1);
+					}
+
+					if (outStream.Length > 0) {
+						byte[] outBuffer = outStream.ToArray();
+						outStream.SetLength(0L);
+						dispatch(TCPClientEvent.DOWNLOAD_COMPLETE, outBuffer);
+					}
+
+					if (bytesRead == 0) {
+						disconnectInternal();
+					}
+				}
+				return;
+			} else {
+				receiveNext();
+				lock (outStream) {
+					outStream.Write(buffer, 0, bytesRead);
+				}
 			}
-
-			try {
-				socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(onRecieve), null);
-			} catch (Exception ex) {
-				dispatch(TCPClientEvent.ERROR, ex.Message);
-			}
-
-			byte[] temp = data.ToArray();
-			data.SetLength(0L);
-
-			dispatch(TCPClientEvent.DEBUG, "Recieved " + temp.Length + " bytes");
-			dispatch(TCPClientEvent.DOWNLOAD_COMPLETE, temp);
 		}
 
+		private void receiveNext() {
+			byte[] buffer = new byte[_bufferSize];
+
+			try {
+				stream.BeginRead(buffer, 0, _bufferSize, new AsyncCallback(onReceive), buffer);
+			} catch (Exception ex) {
+				dispatch(TCPClientEvent.ERROR, ex.Message);
+				return;
+			}
+		}
 		private void sendNext() {
 			if (backlog.Count == 0) {
 				available = true;

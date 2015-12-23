@@ -6,7 +6,7 @@ namespace Pi {
 
 		//constructor
 		public static void Main(string[] args) {
-			new Pi(args);
+			new Pi(args).wait();
 		}
 
 		//public
