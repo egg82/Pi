@@ -14,7 +14,8 @@ namespace Pi {
 		private DiffieHellman dh = new DiffieHellman();
 		private Rijndael aes;
 
-		private SpeechEngine engine = new SpeechEngine();
+		private MicrophoneEngine micEngine = new MicrophoneEngine();
+		private SpeechEngine speechEngine = new SpeechEngine();
 
 		private Observer socketObserver = new Observer();
 
@@ -80,7 +81,7 @@ namespace Pi {
 			} else if (packetType == PacketType.TEST) {
 				Console.WriteLine("[Client] " + ByteUtil.toString(aes.decrypt(packetData)));
 				Console.WriteLine("[Client] Listening for speech..");
-				engine.start();
+				micEngine.start();
 			}
 		}
 	}

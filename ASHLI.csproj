@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProjectGuid>{0CBFCD3B-9AD5-4B3F-93FA-B39FF4D0285A}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Pi</RootNamespace>
+    <AssemblyName>ASHLI</AssemblyName>
+    <StartupObject>Pi.MainClass</StartupObject>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>true</Externalconsole>
+    <PlatformTarget>x86</PlatformTarget>
+    <Commandlineparameters>-c true</Commandlineparameters>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>true</Externalconsole>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.CSharp">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NSpeex">
+      <HintPath>lib\NSpeex.dll</HintPath>
+    </Reference>
+    <Reference Include="BouncyCastle.Crypto">
+      <HintPath>packages\BouncyCastle.1.7.0\lib\Net40-Client\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
+    <Reference Include="CommandLine">
+      <HintPath>packages\CommandLineParser.1.9.71\lib\net45\CommandLine.dll</HintPath>
+    </Reference>
+    <Reference Include="NAudio">
+      <HintPath>packages\NAudio.1.7.3\lib\net35\NAudio.dll</HintPath>
+    </Reference>
+    <Reference Include="SevenZipSharp">
+      <HintPath>packages\SevenZipSharp.0.64\lib\SevenZipSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Syn.Speech">
+      <HintPath>packages\Syn.Speech.1.0.3\lib\net45\Syn.Speech.dll</HintPath>
+    </Reference>
+    <Reference Include="ManagedBass">
+      <HintPath>packages\ManagedBass.0.4.0\lib\ManagedBass.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Commands\ClientTCPCommand.cs" />
+    <Compile Include="Events\Patterns\Command\CommandEvent.cs" />
+    <Compile Include="Events\Speech\SpeechEngineEvent.cs" />
+    <Compile Include="Patterns\Command\Command.cs" />
+    <Compile Include="Patterns\Command\NestedCommand.cs" />
+    <Compile Include="Patterns\Command\ParallelCommand.cs" />
+    <Compile Include="Patterns\Command\SerialCommand.cs" />
+    <Compile Include="Speech\SpeechEngine.cs" />
+    <Compile Include="Util\ByteUtil.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Network\TCPClient.cs" />
+    <Compile Include="Network\TCPServer.cs" />
+    <Compile Include="Patterns\Observer\IDispatchable.cs" />
+    <Compile Include="Patterns\Observer\Observer.cs" />
+    <Compile Include="Events\Network\TCPClientEvent.cs" />
+    <Compile Include="Pi.cs" />
+    <Compile Include="Events\Network\TCPServerEvent.cs" />
+    <Compile Include="Crypto\DiffieHellman.cs" />
+    <Compile Include="Crypto\Rijndael.cs" />
+    <Compile Include="Crypto\Hash.cs" />
+    <Compile Include="Server.cs" />
+    <Compile Include="Util\PacketUtil.cs" />
+    <Compile Include="Client.cs" />
+    <Compile Include="Options.cs" />
+    <Compile Include="Enums\PacketType.cs" />
+    <Compile Include="Speech\MicrophoneEngine.cs" />
+    <Compile Include="Util\SystemUtil.cs" />
+    <Compile Include="Compression\LZMA.cs" />
+    <Compile Include="Compression\Speex.cs" />
+    <Compile Include="Speech\AudioEngine.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Compression\" />
+  </ItemGroup>
+</Project>

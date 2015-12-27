@@ -1,0 +1,16 @@
+/home/alex/Projects/Pi/obj/x86/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.cs
+/home/alex/Projects/Pi/bin/Debug/ASHLI.exe.mdb
+/home/alex/Projects/Pi/bin/Debug/ASHLI.exe
+/home/alex/Projects/Pi/obj/x86/Debug/ASHLI.exe
+/home/alex/Projects/Pi/obj/x86/Debug/ASHLI.exe.mdb
+/home/alex/Projects/Pi/bin/Debug/System.dll
+/home/alex/Projects/Pi/bin/Debug/Microsoft.CSharp.dll
+/home/alex/Projects/Pi/bin/Debug/NSpeex.dll
+/home/alex/Projects/Pi/bin/Debug/BouncyCastle.Crypto.dll
+/home/alex/Projects/Pi/bin/Debug/CommandLine.dll
+/home/alex/Projects/Pi/bin/Debug/NAudio.dll
+/home/alex/Projects/Pi/bin/Debug/SevenZipSharp.dll
+/home/alex/Projects/Pi/bin/Debug/Syn.Speech.dll
+/home/alex/Projects/Pi/bin/Debug/portaudio-sharp.dll
+/home/alex/Projects/Pi/bin/Debug/PortAudioSharp.dll
+/home/alex/Projects/Pi/bin/Debug/ManagedBass.dll
