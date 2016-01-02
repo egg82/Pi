@@ -34,6 +34,9 @@ namespace Speech {
 			Console.WriteLine("Speech recognized: " + output);
 			return output;
 		}
+		public byte[] synthesize(string input) {
+			return new byte[0];
+		}
 
 		//private
 

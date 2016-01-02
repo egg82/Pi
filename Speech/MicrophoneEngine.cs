@@ -21,9 +21,11 @@ namespace Speech {
 		public MicrophoneEngine() {
 			if (SystemUtil.PLATFORM == PlatformID.MacOSX || SystemUtil.PLATFORM == PlatformID.Unix) {
 				unixSource = new Recording(RecordingDevice.DefaultDevice, Resolution.Byte);
-				unixSource.Info.Channels = 1;
-				unixSource.Info.ChannelType = ChannelType.WAV_FLOAT;
-				unixSource.Info.Frequency = 48000;
+				/*unixSource.Info = new ChannelInfo() {
+					Channels = 1,
+					ChannelType = ChannelType.WAV_FLOAT,
+					Frequency = 48000
+				};*/
 				unixSource.Callback += onUnixSourceDataAvailable;
 				unixSource.Stopped += onUnixSourceRecordingStopped;
 			} else {
