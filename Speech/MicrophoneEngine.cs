@@ -20,14 +20,14 @@ namespace Speech {
 		//constructor
 		public MicrophoneEngine() {
 			if (SystemUtil.PLATFORM == PlatformID.MacOSX || SystemUtil.PLATFORM == PlatformID.Unix) {
-				unixSource = new Recording(RecordingDevice.DefaultDevice, Resolution.Byte);
+				//unixSource = new Recording(RecordingDevice.DefaultDevice, Resolution.Byte);
 				/*unixSource.Info = new ChannelInfo() {
 					Channels = 1,
 					ChannelType = ChannelType.WAV_FLOAT,
 					Frequency = 48000
 				};*/
-				unixSource.Callback += onUnixSourceDataAvailable;
-				unixSource.Stopped += onUnixSourceRecordingStopped;
+				/*unixSource.Callback += onUnixSourceDataAvailable;
+				unixSource.Stopped += onUnixSourceRecordingStopped;*/
 			} else {
 				winSource = new WaveInEvent();
 				winSource.WaveFormat = new WaveFormat(48000, 16, 1);

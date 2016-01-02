@@ -6,6 +6,8 @@ using System.Data;
 using System.Data.SQLite;
 using System.Text.RegularExpressions;
 using Util;
+using System.Threading.Tasks;
+using System.Data.Common;
 
 namespace Database {
 	class SQLite : IDispatchable {
@@ -14,8 +16,12 @@ namespace Database {
 
 		private SQLiteConnection connection = null;
 		private bool available = true;
+		private List<string> backlog = new List<string>();
 
 		private string _path = null;
+		private bool _connected = false;
+
+		private Task<DbDataReader> lastQuery = null;
 
 		//constructor
 		public SQLite() {
@@ -24,7 +30,7 @@ namespace Database {
 
 		//public
 		public void connect(string path, string pass = null, bool compact = true) {
-			if (connection != null) {
+			if (connection != null || _connected) {
 				dispatch(SQLiteEvent.ERROR, "SQLite is already connected to " + _path + ".");
 				return;
 			}
@@ -34,6 +40,7 @@ namespace Database {
 			}
 
 			available = false;
+			_connected = false;
 
 			if (FileUtil.exists(path) && FileUtil.isDirectory(path)) {
 				FileUtil.deleteDirectory(path);
@@ -42,22 +49,38 @@ namespace Database {
 				SQLiteConnection.CreateFile(path);
 			}
 
-			connection = new SQLiteConnection("Data Source=" + path + "; Version=3;" + ((pass != null) ? " Password=" + pass + ";" : ""));
-		}
-		public void disconnect() {
-
-		}
-
-		public void query(string q) {
-			if (connection == null) {
+			try {
+				connection = new SQLiteConnection("Data Source=" + path + "; Version=3;" + ((pass != null) ? " Password=" + pass + ";" : ""));
+				connection.StateChange += new StateChangeEventHandler(onStateChange);
+				connection.Commit += new SQLiteCommitHandler(onCommit);
+				connection.OpenAsync();
+			} catch (Exception ex) {
+				dispatch(SQLiteEvent.ERROR, ex.Message);
 				return;
 			}
 
-			SQLiteCommand command = connection.CreateCommand();
-			command.CommandType = CommandType.Text;
-			command.CommandText = q;
+			backlog.Clear();
+		}
+		public void disconnect() {
+			if (connection == null || !_connected) {
+				return;
+			}
 
+			disconnectInternal();
+		}
 
+		public void query(string q) {
+			if (connection == null || !_connected) {
+				dispatch(SQLiteEvent.ERROR, "SQLite is not connected.");
+				return;
+			}
+
+			if (!available || backlog.Count > 0) {
+				backlog.Add(q);
+			} else {
+				available = false;
+				queryInternal(q);
+			}
 		}
 		/*public void query(SQLiteCommand q) {
 
@@ -85,7 +108,7 @@ namespace Database {
 
 		public bool connected {
 			get {
-				return false;
+				return _connected;
 			}
 		}
 
@@ -94,6 +117,70 @@ namespace Database {
 		}
 
 		//private
+		private void disconnectInternal() {
+			try {
+				connection.StateChange -= new StateChangeEventHandler(onStateChange);
+				connection.Close();
+				connection.Dispose();
+			} catch (Exception ex) {
+				dispatch(SQLiteEvent.ERROR, ex.Message);
+				return;
+			}
 
+			connection = null;
+			_path = null;
+			_connected = false;
+			lastQuery = null;
+			backlog.Clear();
+
+			GC.Collect();
+
+			dispatch(SQLiteEvent.DISCONNECTED);
+		}
+		private void queryInternal(string q) {
+			SQLiteCommand command = connection.CreateCommand();
+			command.CommandType = CommandType.Text;
+			command.CommandText = q;
+
+			try {
+				lastQuery = command.ExecuteReaderAsync();
+			} catch (Exception ex) {
+				dispatch(SQLiteEvent.ERROR, ex.Message);
+			}
+		}
+
+		private void onStateChange(object sender, StateChangeEventArgs e) {
+			if (e.CurrentState == ConnectionState.Open) {
+				_connected = true;
+			} else if (e.CurrentState == ConnectionState.Broken || e.CurrentState == ConnectionState.Closed) {
+				disconnectInternal();
+				_connected = false;
+			}
+		}
+		private void onCommit(object sender, CommitEventArgs e) {
+			List<object[]> rows = new List<object[]>();
+
+			while (lastQuery.Result.Read()) {
+				object[] row = new object[lastQuery.Result.FieldCount];
+				lastQuery.Result.GetValues(row);
+				rows.Add(row);
+			}
+
+			dispatch(SQLiteEvent.RESULT, new SQLResult(rows.ToArray(), (uint) connection.LastInsertRowId, (uint) lastQuery.Result.RecordsAffected));
+			sendNext();
+		}
+
+		private void sendNext() {
+			if (backlog.Count == 0) {
+				available = true;
+				return;
+			}
+
+			dispatch(SQLiteEvent.SEND_NEXT);
+
+			string q = backlog[0];
+			backlog.RemoveAt(0);
+			queryInternal(q);
+		}
 	}
 }

@@ -8,6 +8,8 @@ namespace Events.Database {
 		public const string DISCONNECTED = "disconnected";
 		public const string RESULT = "result";
 
+		public const string SEND_NEXT = "sendNext";
+
 		//constructor
 		public SQLiteEvent() {
 

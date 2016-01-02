@@ -14,3 +14,15 @@
 /home/alex/Projects/Pi/bin/Debug/portaudio-sharp.dll
 /home/alex/Projects/Pi/bin/Debug/PortAudioSharp.dll
 /home/alex/Projects/Pi/bin/Debug/ManagedBass.dll
+/home/alex/Projects/Pi/bin/Debug/Bass.Net.dll
+/home/alex/Projects/Pi/bin/Debug/EntityFramework.dll
+/home/alex/Projects/Pi/bin/Debug/EntityFramework.SqlServer.dll
+/home/alex/Projects/Pi/bin/Debug/System.Composition.AttributedModel.dll
+/home/alex/Projects/Pi/bin/Debug/System.Composition.Convention.dll
+/home/alex/Projects/Pi/bin/Debug/System.Composition.Hosting.dll
+/home/alex/Projects/Pi/bin/Debug/System.Composition.Runtime.dll
+/home/alex/Projects/Pi/bin/Debug/System.Composition.TypedParts.dll
+/home/alex/Projects/Pi/bin/Debug/System.Data.SQLite.dll
+/home/alex/Projects/Pi/bin/Debug/System.Data.SQLite.EF6.dll
+/home/alex/Projects/Pi/bin/Debug/System.Data.SQLite.Linq.dll
+/home/alex/Projects/Pi/bin/Debug/ASHLI.exe.config

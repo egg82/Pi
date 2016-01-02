@@ -1,9 +1,11 @@
 ﻿<Properties StartupItem="ASHLI.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Speech/MicrophoneEngine.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Database/SQLite.cs">
     <Files>
       <File FileName="Client.cs" Line="11" Column="23" />
-      <File FileName="Speech/MicrophoneEngine.cs" Line="31" Column="57" />
+      <File FileName="Speech/MicrophoneEngine.cs" Line="30" Column="58" />
+      <File FileName="Database/SQLite.cs" Line="142" Column="43" />
+      <File FileName="Network/TCPClient.cs" Line="224" Column="4" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
