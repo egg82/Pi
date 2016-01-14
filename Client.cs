@@ -14,10 +14,11 @@ namespace Pi {
 		private DiffieHellman dh = new DiffieHellman();
 		private Rijndael aes;
 
-		private MicrophoneEngine micEngine = new MicrophoneEngine();
+		private MicrophoneEngine micEngine = new MicrophoneEngine(13.0d, 10, 2);
 		private SpeechEngine speechEngine = new SpeechEngine();
 
 		private Observer socketObserver = new Observer();
+		private Observer microphoneObserver = new Observer();
 
 		private byte[] key;
 		private byte[] iv;
@@ -29,6 +30,9 @@ namespace Pi {
 		public Client(string host, ushort port) {
 			socketObserver.add(onSocketObserverNotify);
 			Observer.add(TCPClient.OBSERVERS, socketObserver);
+
+			microphoneObserver.add(onMicrophoneObserverNotify);
+			Observer.add(MicrophoneEngine.OBSERVERS, microphoneObserver);
 
 			_host = host;
 			_port = port;
@@ -72,8 +76,8 @@ namespace Pi {
 			if (packetType == PacketType.DIFFIE_HELLMAN) {
 				Console.WriteLine("[Client] Recieved DH key.");
 				byte[] S = dh.S(packetData);
-				key = Hash.sha256(ByteUtil.combine(ByteUtil.toByte("0keeP+attentioN+wateR+herE1+"), S));
-				iv = Hash.sha256(ByteUtil.combine(ByteUtil.toByte("1-Knew-Carbon-Involved-State2"), S));
+				key = Hash.sha256(S);
+				iv = Hash.sha256(S);
 				aes = new Rijndael(key, iv);
 				Console.WriteLine("[Client] DH key exchanged, AES key created.");
 				Console.WriteLine("[Client] Sending encrypted test string.");
@@ -83,6 +87,11 @@ namespace Pi {
 				Console.WriteLine("[Client] Listening for speech..");
 				micEngine.start();
 			}
+		}
+
+		private void onMicrophoneObserverNotify(object sender, string evnt, dynamic args) {
+			Console.WriteLine("Input: " + args.Length);
+			speechEngine.recognize(args);
 		}
 	}
 }

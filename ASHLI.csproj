@@ -35,6 +35,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Bass.Net, Version=2.4.11.1, Culture=neutral, PublicKeyToken=b7566c273e6ef480, processorArchitecture=MSIL" />
+    <Reference Include="Bass.Net.Linux, Version=2.4.11.1, Culture=neutral, PublicKeyToken=b7566c273e6ef480, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\Bass.Net.Linux.dll</HintPath>
+    </Reference>
+    <Reference Include="Bass.Net.OSX, Version=2.4.11.1, Culture=neutral, PublicKeyToken=b7566c273e6ef480, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\Bass.Net.OSX.dll</HintPath>
+    </Reference>
+    <Reference Include="ManagedBass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\ManagedBass.0.8.0\lib\ManagedBass.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System">
       <Private>True</Private>
     </Reference>
@@ -58,9 +70,6 @@
     </Reference>
     <Reference Include="Syn.Speech">
       <HintPath>packages\Syn.Speech.1.0.3\lib\net45\Syn.Speech.dll</HintPath>
-    </Reference>
-    <Reference Include="ManagedBass">
-      <HintPath>packages\ManagedBass.0.4.0\lib\ManagedBass.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
@@ -100,6 +109,7 @@
     <Compile Include="Database\SQLite.cs" />
     <Compile Include="Events\Database\SQLiteEvent.cs" />
     <Compile Include="Events\Patterns\Command\CommandEvent.cs" />
+    <Compile Include="Events\Speech\MicrophoneEngineEvent.cs" />
     <Compile Include="Events\Speech\SpeechEngineEvent.cs" />
     <Compile Include="Patterns\Command\Command.cs" />
     <Compile Include="Patterns\Command\NestedCommand.cs" />

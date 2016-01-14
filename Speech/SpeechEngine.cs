@@ -16,18 +16,26 @@ namespace Speech {
 			config.AcousticModelPath = models;
 			config.DictionaryPath = models + SystemUtil.SEPARATOR + "cmudict-en-us.dict";
 			config.LanguageModelPath = models + SystemUtil.SEPARATOR + "en-us.lm.dmp";
-			config.SampleRate = 48000;
+			//config.SampleRate = 16000;
+			config.UseGrammar = true;
+			config.GrammarPath = SystemUtil.CWD + SystemUtil.SEPARATOR + "mods" + SystemUtil.SEPARATOR + "random";
+			config.GrammarName = "number";
 
 			engine = new StreamSpeechRecognizer(config);
 		}
 
 		//public
-		public string recognize(MemoryStream stream) {
-			string output;
+		public string recognize(byte[] data) {
+			string output = null;
+			SpeechResult result;
+			MemoryStream stream = new MemoryStream(data);
 
 			lock (engine) {
 				engine.StartRecognition(stream);
-				output = engine.GetResult().GetHypothesis();
+				result = engine.GetResult();
+				if (result != null) {
+					output = result.GetHypothesis();
+				}
 				engine.StopRecognition();
 			}
 

@@ -26,3 +26,13 @@ C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\CommandLine.xml
 C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\NAudio.xml
 C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\System.Data.SQLite.xml
 C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\obj\x86\Debug\ASHLI.pdb
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\System.Composition.AttributedModel.dll
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\System.Composition.Convention.dll
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\System.Composition.Hosting.dll
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\System.Composition.Runtime.dll
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\System.Composition.TypedParts.dll
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\System.Composition.AttributedModel.xml
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\System.Composition.Convention.xml
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\System.Composition.Hosting.xml
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\System.Composition.Runtime.xml
+C:\Users\Alex\Documents\Visual Studio 2015\Projects\Pi\bin\Debug\System.Composition.TypedParts.xml

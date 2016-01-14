@@ -61,8 +61,8 @@ namespace Pi {
 			if (packetType == PacketType.DIFFIE_HELLMAN) {
 				Console.WriteLine("[Server] Recieved DH key.");
 				byte[] S = dh.S(packetData);
-				key = Hash.sha256(ByteUtil.combine(ByteUtil.toByte("0keeP+attentioN+wateR+herE1+"), S));
-				iv = Hash.sha256(ByteUtil.combine(ByteUtil.toByte("1-Knew-Carbon-Involved-State2"), S));
+				key = Hash.sha256(S);
+				iv = Hash.sha256(S);
 				aes = new Rijndael(key, iv);
 				Console.WriteLine("[Server] DH key exchanged, AES key created.");
 				sendPacket(client, PacketType.DIFFIE_HELLMAN, dh.AB);
